@@ -1,0 +1,31 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract StockManagement {
+    address public stockOwner;
+    mapping(uint256 => uint256) public sharePrices;
+
+    constructor() {
+        stockOwner = msg.sender;
+    }
+
+    modifier onlyStockOwner() {
+        require(msg.sender == stockOwner, "Only the stock owner can perform this action");
+        _;
+    }
+
+    function setSharePrice(uint256 stockId, uint256 price) external onlyStockOwner {
+        require(price >= 0, "Share price must be non-negative");
+        sharePrices[stockId] = price;
+    }
+
+    function processStockTransaction(uint256 stockId, uint256 askedPrice) external {
+        require(askedPrice > 0, "Invalid asked price");
+        assert(askedPrice >= 250);
+        if (askedPrice > sharePrices[stockId]) {
+            revert("Asked price exceeds available shares");
+        }
+        assert(sharePrices[stockId] >= askedPrice);
+        sharePrices[stockId] -= askedPrice;
+    }
+}
